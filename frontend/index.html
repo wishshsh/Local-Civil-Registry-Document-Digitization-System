@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local Civil Registry</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="header">
+        <h1 onclick="goHome()" style="cursor: pointer;">LOCAL CIVIL REGISTRY</h1>
+        <div class="header-buttons" id="headerButtons" style="display: none;">
+            <button class="header-btn" onclick="showPage('services')">SERVICES</button>
+            <button class="header-btn" onclick="showPage('records')">RECORDS</button>
+            <div class="user-icon" onclick="logout()" title="Logout">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <div class="content">
+        <!-- Login Page -->
+        <div id="loginPage" class="page active">
+            <div class="login-container">
+                <form class="login-form" onsubmit="login(event)">
+                    <div class="form-group">
+                        <label for="username">Username:</label>
+                        <input type="text" id="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password:</label>
+                        <input type="password" id="password" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Login</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Services Page -->
+        <div id="servicesPage" class="page">
+            <div class="services-container">
+                <h2>SERVICES</h2>
+                <button class="service-btn" onclick="showPage('certifications')">CERTIFICATIONS</button>
+                <button class="service-btn" onclick="showPage('marriageLicense')">APPLICATION FOR<br>MARRIAGE LICENSE</button>
+            </div>
+        </div>
+
+        <!-- Certifications Upload Page -->
+        <div id="certificationsPage" class="page">
+            <div class="upload-container">
+                <h2>CERTIFICATIONS</h2>
+                <p class="upload-subtitle">Form 1A, Form 2A, Form 3A</p>
+                
+                <div class="upload-area" id="certUploadArea" onclick="document.getElementById('certFileInput').click()">
+                    <svg class="upload-icon" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="15" y="25" width="25" height="35" fill="#ADD8E6" opacity="0.5"/>
+                        <rect x="20" y="20" width="25" height="35" fill="#4A90E2"/>
+                        <rect x="30" y="28" width="25" height="35" fill="#FFA500"/>
+                    </svg>
+                    <p class="upload-text">
+                        Drag & Drop files here to upload<br>
+                        or <span class="browse-link" onclick="event.stopPropagation(); document.getElementById('certFileInput').click();">Browse Files</span>
+                    </p>
+                </div>
+                <input type="file" id="certFileInput" class="file-input" multiple accept=".pdf,.doc,.docx,.jpg,.png" onchange="handleFileUpload(event, 'cert')">
+                
+                <div id="certFiles" class="uploaded-files"></div>
+                
+                <button class="btn-proceed" onclick="processCertification()">PROCEED</button>
+            </div>
+        </div>
+
+        <!-- Certification Template View -->
+        <div id="certTemplateViewPage" class="page">
+            <div class="template-container">
+                <div class="template-box">
+                    TEMPLATE OF<br>
+                    FORM 1A/FORM 2A/FORM 3A
+                </div>
+                <button class="btn-save" onclick="saveCertification()">SAVE</button>
+            </div>
+        </div>
+
+        <!-- Marriage License Upload Page -->
+        <div id="marriageLicensePage" class="page">
+            <div class="upload-container">
+                <h2>APPLICATION FOR MARRIAGE LICENSE</h2>
+                
+                <div class="upload-area" id="marriageUploadArea" onclick="document.getElementById('marriageFileInput').click()">
+                    <svg class="upload-icon" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="15" y="25" width="25" height="35" fill="#ADD8E6" opacity="0.5"/>
+                        <rect x="20" y="20" width="25" height="35" fill="#4A90E2"/>
+                        <rect x="30" y="28" width="25" height="35" fill="#FFA500"/>
+                    </svg>
+                    <p class="upload-text">
+                        Drag & Drop files here to upload<br>
+                        or <span class="browse-link" onclick="event.stopPropagation(); document.getElementById('marriageFileInput').click();">Browse Files</span>
+                    </p>
+                </div>
+                <input type="file" id="marriageFileInput" class="file-input" multiple accept=".pdf,.doc,.docx,.jpg,.png" onchange="handleFileUpload(event, 'marriage')">
+                
+                <div id="marriageFiles" class="uploaded-files"></div>
+                
+                <button class="btn-proceed" onclick="processMarriage()">PROCEED</button>
+            </div>
+        </div>
+
+        <!-- Marriage License Template View -->
+        <div id="marriageTemplateViewPage" class="page">
+            <div class="template-container">
+                <div class="template-box">
+                    TEMPLATE OF<br>
+                    APPLICATION OF MARRIAGE<br>
+                    LICENSE
+                </div>
+                <button class="btn-save" onclick="saveMarriage()">SAVE</button>
+            </div>
+        </div>
+
+        <!-- Records Page -->
+        <div id="recordsPage" class="page">
+            <div class="records-container">
+                <div class="records-header">
+                    <h2 class="records-title">RECORDS</h2>
+                    
+                    <div class="filters-section">
+                        <div class="search-row">
+                            <input type="text" class="search-input" placeholder="Search by name or ID..." id="searchInput" onkeyup="handleSearchKeypress(event)">
+                            <button class="search-btn" onclick="searchRecords()">🔍 Search</button>
+                        </div>
+                        
+                        <div class="filter-row">
+                            <select class="filter-select" id="typeSelect" onchange="filterRecords()">
+                                <option value="">All Types</option>
+                                <option value="birth">Birth Certificate</option>
+                                <option value="death">Death Certificate</option>
+                                <option value="marriage-cert">Marriage Certificate</option>
+                                <option value="marriage-license">Marriage License</option>
+                            </select>
+                            
+                            <select class="filter-select" id="statusSelect" onchange="filterRecords()">
+                                <option value="">All Status</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Processed">Processed</option>
+                                <option value="Approved">Approved</option>
+                                <option value="Rejected">Rejected</option>
+                            </select>
+                            
+                            <select class="filter-select" id="dateFilter" onchange="filterRecords()">
+                                <option value="">All Dates</option>
+                                <option value="today">Today</option>
+                                <option value="week">This Week</option>
+                                <option value="month">This Month</option>
+                                <option value="year">This Year</option>
+                            </select>
+                            
+                            <button class="clear-btn" onclick="clearFilters()">Clear Filters</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="records-table-container">
+                    <table class="records-table" id="recordsTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Type</th>
+                                <th>Name</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recordsTableBody">
+                            <tr>
+                                <td colspan="5" class="no-records">No records found</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

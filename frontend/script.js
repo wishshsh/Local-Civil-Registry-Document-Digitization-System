@@ -16,6 +16,16 @@ let navigationHistory = ['login'];
 let currentHistoryIndex = 0;
 let isLoggedIn = false;
 
+// User data
+let currentUser = {
+    username: '',
+    name: 'Admin User',
+    email: 'admin@localregistry.gov.ph',
+    role: 'Administrator',
+    department: 'Civil Registry Office',
+    employeeId: 'EMP-2024-001'
+};
+
 // Page URLs mapping (for potential future use)
 const pageUrls = {
     'login': 'https://localcivilregistry.gov.ph',
@@ -24,8 +34,31 @@ const pageUrls = {
     'certTemplateView': 'https://localcivilregistry.gov.ph/services/certifications/template',
     'marriageLicense': 'https://localcivilregistry.gov.ph/services/marriage-license',
     'marriageTemplateView': 'https://localcivilregistry.gov.ph/services/marriage-license/template',
-    'records': 'https://localcivilregistry.gov.ph/records'
+    'records': 'https://localcivilregistry.gov.ph/records',
+    'profile': 'https://localcivilregistry.gov.ph/profile'
 };
+
+// Update back button visibility
+function updateBackButton() {
+    const backButton = document.getElementById('backButton');
+    const currentPage = navigationHistory[currentHistoryIndex];
+    
+    // Show back button if not on login or services page and logged in
+    if (isLoggedIn && currentHistoryIndex > 0 && currentPage !== 'services') {
+        backButton.style.display = 'flex';
+    } else {
+        backButton.style.display = 'none';
+    }
+}
+
+// Go back in navigation history
+function goBack() {
+    if (currentHistoryIndex > 0) {
+        currentHistoryIndex--;
+        const previousPage = navigationHistory[currentHistoryIndex];
+        showPage(previousPage, false);
+    }
+}
 
 // Page Navigation with history
 function showPage(pageName, addToHistory = true) {
@@ -43,12 +76,161 @@ function showPage(pageName, addToHistory = true) {
             navigationHistory.push(pageName);
             currentHistoryIndex = navigationHistory.length - 1;
         }
+        
+        // Update back button visibility
+        updateBackButton();
+        
+        // Close user menu when navigating
+        closeUserMenu();
     }
 
     // Show records when navigating to records page
     if (pageName === 'records') {
         displayRecords(records);
     }
+    
+    // Update profile page when navigating to it
+    if (pageName === 'profile') {
+        updateProfilePage();
+    }
+}
+
+// Toggle user menu
+function toggleUserMenu() {
+    const userMenu = document.getElementById('userMenu');
+    if (userMenu.style.display === 'none' || userMenu.style.display === '') {
+        userMenu.style.display = 'block';
+        // Update user info in menu
+        document.getElementById('userName').textContent = currentUser.name;
+        document.getElementById('userEmail').textContent = currentUser.email;
+    } else {
+        userMenu.style.display = 'none';
+    }
+}
+
+// Close user menu
+function closeUserMenu() {
+    const userMenu = document.getElementById('userMenu');
+    userMenu.style.display = 'none';
+}
+
+// View profile
+function viewProfile() {
+    showPage('profile');
+}
+
+// Update profile page with current user data
+function updateProfilePage() {
+    document.getElementById('profileName').value = currentUser.name;
+    document.getElementById('profileEmail').value = currentUser.email;
+    document.getElementById('profileUsername').value = currentUser.username;
+    document.getElementById('profileRole').value = currentUser.role;
+    document.getElementById('profileDepartment').value = currentUser.department;
+    document.getElementById('profileEmployeeId').value = currentUser.employeeId;
+}
+
+// Edit Profile Modal Functions
+function openEditProfileModal() {
+    document.getElementById('editName').value = currentUser.name;
+    document.getElementById('editEmail').value = currentUser.email;
+    document.getElementById('editDepartment').value = currentUser.department;
+    document.getElementById('editProfileModal').style.display = 'flex';
+}
+
+function closeEditProfileModal() {
+    document.getElementById('editProfileModal').style.display = 'none';
+    // Clear form
+    document.getElementById('editName').value = '';
+    document.getElementById('editEmail').value = '';
+    document.getElementById('editDepartment').value = '';
+}
+
+function saveProfileChanges(event) {
+    event.preventDefault();
+    
+    // Update user data
+    currentUser.name = document.getElementById('editName').value;
+    currentUser.email = document.getElementById('editEmail').value;
+    currentUser.department = document.getElementById('editDepartment').value;
+    
+    // Update profile page
+    updateProfilePage();
+    
+    // Update user menu
+    document.getElementById('userName').textContent = currentUser.name;
+    document.getElementById('userEmail').textContent = currentUser.email;
+    
+    // Close modal
+    closeEditProfileModal();
+    
+    // Show success message
+    showNotification('Profile updated successfully!', 'success');
+}
+
+// Change Password Modal Functions
+function openChangePasswordModal() {
+    document.getElementById('changePasswordModal').style.display = 'flex';
+}
+
+function closeChangePasswordModal() {
+    document.getElementById('changePasswordModal').style.display = 'none';
+    // Clear form
+    document.getElementById('currentPassword').value = '';
+    document.getElementById('newPassword').value = '';
+    document.getElementById('confirmPassword').value = '';
+}
+
+function changePassword(event) {
+    event.preventDefault();
+    
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    
+    // Validate passwords match
+    if (newPassword !== confirmPassword) {
+        showNotification('New passwords do not match!', 'error');
+        return;
+    }
+    
+    // Validate password length
+    if (newPassword.length < 8) {
+        showNotification('Password must be at least 8 characters long!', 'error');
+        return;
+    }
+    
+    // In a real application, this would verify the current password with the server
+    // For this demo, we'll just accept it
+    
+    // Close modal
+    closeChangePasswordModal();
+    
+    // Show success message
+    showNotification('Password changed successfully!', 'success');
+}
+
+// Notification function
+function showNotification(message, type) {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.textContent = message;
+    
+    // Add to body
+    document.body.appendChild(notification);
+    
+    // Trigger animation
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 10);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            document.body.removeChild(notification);
+        }, 300);
+    }, 3000);
 }
 
 // Home navigation
@@ -60,6 +242,7 @@ function goHome() {
 
 // Logout function
 function logout() {
+    closeUserMenu();
     if (confirm('Are you sure you want to logout?')) {
         isLoggedIn = false;
         document.getElementById('headerButtons').style.display = 'none';
@@ -68,7 +251,9 @@ function logout() {
         uploadedFiles = { cert: [], marriage: [] };
         navigationHistory = ['login'];
         currentHistoryIndex = 0;
+        currentUser.username = '';
         showPage('login', false);
+        updateBackButton();
     }
 }
 
@@ -81,8 +266,10 @@ function login(event) {
     // Simple validation (in real app, this would be server-side)
     if (username && password) {
         isLoggedIn = true;
+        currentUser.username = username;
         document.getElementById('headerButtons').style.display = 'flex';
         showPage('services');
+        updateBackButton();
     } else {
         alert('Please enter valid credentials');
     }
@@ -341,6 +528,30 @@ document.addEventListener('DOMContentLoaded', function() {
         }, false);
     });
 
+    // Close user menu when clicking outside
+    document.addEventListener('click', function(event) {
+        const userMenu = document.getElementById('userMenu');
+        const userIcon = document.querySelector('.user-icon');
+        
+        if (userMenu && userIcon && 
+            !userMenu.contains(event.target) && 
+            !userIcon.contains(event.target)) {
+            closeUserMenu();
+        }
+        
+        // Close modals when clicking outside
+        const editModal = document.getElementById('editProfileModal');
+        const passwordModal = document.getElementById('changePasswordModal');
+        
+        if (editModal && event.target === editModal) {
+            closeEditProfileModal();
+        }
+        
+        if (passwordModal && event.target === passwordModal) {
+            closeChangePasswordModal();
+        }
+    });
+
     // Keyboard shortcuts
     document.addEventListener('keydown', function(e) {
         if (e.altKey && e.key === 's' && isLoggedIn) {
@@ -350,6 +561,16 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.altKey && e.key === 'r' && isLoggedIn) {
             e.preventDefault();
             showPage('records');
+        }
+        if (e.altKey && e.key === 'p' && isLoggedIn) {
+            e.preventDefault();
+            showPage('profile');
+        }
+        // Backspace or browser back for back button
+        if (e.key === 'Backspace' && isLoggedIn && 
+            !['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
+            e.preventDefault();
+            goBack();
         }
     });
 });
